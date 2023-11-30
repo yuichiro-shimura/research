@@ -7,6 +7,8 @@ page_num = page_num_init
 
 # 検索条件
 location = "名古屋市"
+except_word_1 = "女子校"
+except_word_2 = "中高一貫校"
 url = "https://www.minkou.jp/hischool/search/pref=aichi/page={}/".format(page_num_init)
 
 # Webページを取得
@@ -29,6 +31,9 @@ else:
 print(f"総ページ数: {total_page_num}")
 print()
 
+# 検索条件に適合した数
+match_num = 0
+
 while page_num <= total_page_num:
     url = "https://www.minkou.jp/hischool/search/pref=aichi/page={}/".format(page_num)
     
@@ -38,17 +43,22 @@ while page_num <= total_page_num:
     # HTMLを解析
     soup = BeautifulSoup(response.content, "html.parser")
     
-
     # 検索結果を取得
     results = soup.find_all("div", class_="mod-listSearch-info")
-    
+   
     # 検索結果を表示
     for result in results:
         
         # 学校の所在地を取得
-        school_location = result.find("span").text
+        school_summary = result.find("span").text
         
-        if location not in school_location:
+        if location not in school_summary:
+            continue
+        
+        elif except_word_1 in school_summary:
+            continue
+        
+        elif except_word_2 in school_summary:
             continue
         
         # 学校名を取得
@@ -62,10 +72,14 @@ while page_num <= total_page_num:
     
         # 結果を出力
         print(f"学校名: {school_name}")
-        print(f"所在地: {school_location}")
+        print(f"概要: {school_summary}")
         print(f"偏差値: {school_deviation}")
         print(f"評判: {school_review}")
         print()
+        
+        match_num += 1
     
     # ページ数増分
     page_num += 1
+
+print(f"ヒット件数:{match_num}")
