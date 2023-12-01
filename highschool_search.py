@@ -1,5 +1,12 @@
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+
+# リスト定義
+school_name = []
+school_summary = []
+school_deviation = []
+school_review = []
 
 # ページ数の初期値
 page_num_init = 1
@@ -49,37 +56,37 @@ while page_num <= total_page_num:
     # 検索結果を表示
     for result in results:
         
-        # 学校の所在地を取得
-        school_summary = result.find("span").text
         
-        if location not in school_summary:
+        # 学校の所在地によるフィルター
+        school_location = result.find("span").text
+        if location not in school_location:
             continue
         
-        elif except_word_1 in school_summary:
+        elif except_word_1 in school_location:
             continue
         
-        elif except_word_2 in school_summary:
+        elif except_word_2 in school_location:
             continue
         
         # 学校名を取得
-        school_name = result.find("a").text
-    
+        school_name.append(result.find("a").text)
+
+        # 学校の概要を取得
+        school_summary.append(result.find("span").text)
+
         # 偏差値を取得
-        school_deviation = result.find("dd").text
+        school_deviation.append(result.find("dd").text)
     
         # 口コミの点数を取得
-        school_review = result.find("div", class_="mod-listSearch-review").find("a").text
+        school_review.append(result.find("div", class_="mod-listSearch-review").find("a").text)
     
-        # 結果を出力
-        print(f"学校名: {school_name}")
-        print(f"概要: {school_summary}")
-        print(f"偏差値: {school_deviation}")
-        print(f"評判: {school_review}")
-        print()
-        
         match_num += 1
     
     # ページ数増分
     page_num += 1
 
 print(f"ヒット件数:{match_num}")
+school_data = {"学校名":school_name, "概要":school_summary, "偏差値":school_deviation, "評判":school_review}
+school_data_table = pd.DataFrame(school_data)
+print(school_data_table)
+school_data_table.to_csv("search_results.csv")
